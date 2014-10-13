@@ -1,4 +1,5 @@
-import cv2, time
+#!/usr/bin/python
+import cv2, time, os, sys, getopt
 
 def diffImg(t0, t1, t2):
   d1 = cv2.absdiff(t2, t1)
@@ -17,8 +18,28 @@ def hasBeenXSec(s):
     return True
   return False
 
+def usage():
+  print "This is the usage. TODO."
 
-cam = cv2.VideoCapture(0t)
+def main():
+  directory = "./security/"
+  try:
+    opts, args = getopt.getopt(sys.argv[1:], "hd:", ["help", "directory="])
+  except getopt.GetoptError:
+    print "Invalid Parameter"
+    usage()
+    sys.exit(2)
+  for opt, arg in opts:
+    if opt in ("-h", "--help"):
+      usage()
+      sys.exit()
+    elif opt in ("-d", "--directory="):
+      directory = arg
+
+if __name__ == "__main__":
+  main()
+
+cam = cv2.VideoCapture(0)
 #cam2 = cv2.VideoCapture(2)
 
 winName = "Movement Indicator"
@@ -44,6 +65,11 @@ init = True
 initSum = 0
 initCount = 0
 
+directory = "./security/"
+
+if not os.path.exists(directory):
+  os.makedirs(directory)
+
 
 while True:
   if(init and hasBeenXSec(5)):
@@ -60,7 +86,7 @@ while True:
         print("Motion Detected!!! #" + `counter`)
         #cv2.imshow("Camera 2",cam2_frame)
         global_gmtime = time.gmtime()
-        cv2.imwrite("/home/kyle/Pictures/security/frame"+`counter`+".jpg",color_frame)
+        cv2.imwrite(directory + "frame"+`counter`+".jpg",color_frame)
         counter+=1
   else:
     initSum += movement
