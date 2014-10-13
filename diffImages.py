@@ -21,7 +21,57 @@ def hasBeenXSec(s):
 def usage():
   print "This is the usage. TODO."
 
+def createIfNotExists(dir):
+  if not os.path.exists(dir):
+    os.makedirs(dir)
+
+def setup():
+  global cam 
+  cam = cv2.VideoCapture(0)
+  #cam2 = cv2.VideoCapture(2)
+
+  global winName
+  winName = "Movement Indicator"
+  cv2.namedWindow(winName, cv2.CV_WINDOW_AUTOSIZE)
+
+  global counter
+  counter = 0
+  global timer
+  timer = 2
+
+  # Read three images first:
+  global t_minus
+  t_minus = cv2.cvtColor(cam.read()[1], cv2.COLOR_RGB2GRAY)
+  global t
+  t = cv2.cvtColor(cam.read()[1], cv2.COLOR_RGB2GRAY)
+  global color_frame
+  color_frame = cam.read()[1]
+  global t_plus
+  t_plus = cv2.cvtColor(color_frame, cv2.COLOR_RGB2GRAY)
+
+  global global_gmtime
+  global_gmtime = time.gmtime()
+  #cam2_frame = cam2.read()[1]
+
+  global frame
+  frame = diffImg(t_minus, t, t_plus)
+
+  global threshhold
+  threshhold = 0
+
+  global init
+  init = True
+  global initSum
+  initSum = 0
+  global initCount
+  initCount = 0
+
+
+
+
+
 def main():
+  global directory
   directory = "./security/"
   try:
     opts, args = getopt.getopt(sys.argv[1:], "hd:", ["help", "directory="])
@@ -36,42 +86,17 @@ def main():
     elif opt in ("-d", "--directory="):
       directory = arg
 
+  createIfNotExists(directory)
+  setup()
+
 if __name__ == "__main__":
   main()
 
-cam = cv2.VideoCapture(0)
-#cam2 = cv2.VideoCapture(2)
-
-winName = "Movement Indicator"
-cv2.namedWindow(winName, cv2.CV_WINDOW_AUTOSIZE)
-
-counter = 0
-timer = 2
-
-# Read three images first:
-t_minus = cv2.cvtColor(cam.read()[1], cv2.COLOR_RGB2GRAY)
-t = cv2.cvtColor(cam.read()[1], cv2.COLOR_RGB2GRAY)
-color_frame = cam.read()[1]
-t_plus = cv2.cvtColor(color_frame, cv2.COLOR_RGB2GRAY)
-global_gmtime = time.gmtime()
-#cam2_frame = cam2.read()[1]
-
-frame = diffImg(t_minus, t, t_plus)
-threshhold = 0
-
-
-init = True
-
-initSum = 0
-initCount = 0
-
-directory = "./security/"
-
-if not os.path.exists(directory):
-  os.makedirs(directory)
-
 
 while True:
+  global init
+  global threshhold
+  global frame
   if(init and hasBeenXSec(5)):
     threshhold = initSum / initCount + 1000
     init = False
@@ -83,7 +108,7 @@ while True:
   if(not init):
     if(movement > threshhold):
       if(hasBeenXSec(timer)):
-        print("Motion Detected!!! #" + `counter`)
+        print("Motion Detected!!! #" + `counter`) # + " " + time.strftime("%Y-%m-%d %H:%M:%S %Z%z", time.gmtime()))
         #cv2.imshow("Camera 2",cam2_frame)
         global_gmtime = time.gmtime()
         cv2.imwrite(directory + "frame"+`counter`+".jpg",color_frame)
