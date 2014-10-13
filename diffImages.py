@@ -20,7 +20,9 @@ def hasBeenXSec(s):
   return False
 
 def usage():
-  print "This is the usage. TODO."
+  print ""
+  print "usage: " + sys.argv[0]
+  print ""
 
 def createIfNotExists(dir):
   if not os.path.exists(dir):
@@ -112,10 +114,11 @@ def startLogger(dir):
   elif log == "CRITICAL":
     logging.basicConfig(filename=dir+"monitor.log",level=logging.CRITICAL)
   else:
-    print "Bad logging level. Exiting." #Should never get here
+    #Shound never get here.
+    print "Bad logging level. Exiting."
     sys.exit(-1)
 
-  logging.info("["+time.strftime("%Y-%m-%d %H:%M:%S %Z%z", time.gmtime()) + "] " +  "Starting logging")
+  logging.info("["+time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime()) + "] " +  "Starting logging")
 
 
 
@@ -139,15 +142,15 @@ while True:
     threshhold = initSum / initCount + 1000
     init = False
     print "System initialized. Beginning capture."
-    print "Threshhold = " + `threshhold`
+    #print "Threshhold = " + `threshhold`
   frame = diffImg(t_minus, t, t_plus)
   movement = cv2.countNonZero(frame)
   
   if(not init):
     if(movement > threshhold):
       if(hasBeenXSec(timer)):
-        print("Motion Detected!!! #" + `counter`) # + " " + time.strftime("%Y-%m-%d %H:%M:%S %Z%z", time.gmtime()))
-        logging.debug("["+time.strftime("%Y-%m-%d %H:%M:%S %Z%z", time.gmtime()) + "] " + "Image #" + `counter` + " captured." )
+        #print("Motion Detected!!! #" + `counter`)
+        logging.debug("["+time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime()) + "] " + "Image #" + `counter` + " captured." )
         #cv2.imshow("Camera 2",cam2_frame)
         global_gmtime = time.gmtime()
         cv2.imwrite(directory + "frame"+`counter`+".jpg",color_frame)
