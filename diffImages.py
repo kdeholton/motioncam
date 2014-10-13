@@ -1,5 +1,6 @@
 #!/usr/bin/python
-import cv2, time, os, sys, getopt
+import cv2, time, os, sys, getopt, logging
+
 
 def diffImg(t0, t1, t2):
   d1 = cv2.absdiff(t2, t1)
@@ -66,15 +67,13 @@ def setup():
   global initCount
   initCount = 0
 
-
-
-
-
-def main():
+def parseArgs():
   global directory
   directory = "./security/"
+  global log
+  log = "DEBUG"
   try:
-    opts, args = getopt.getopt(sys.argv[1:], "hd:", ["help", "directory="])
+    opts, args = getopt.getopt(sys.argv[1:], "hd:l:", ["help", "directory=", "log="])
   except getopt.GetoptError:
     print "Invalid Parameter"
     usage()
@@ -85,8 +84,41 @@ def main():
       sys.exit()
     elif opt in ("-d", "--directory="):
       directory = arg
+    elif opt in ("-l", "--log="):
+      if arg in ("DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"):
+        log = arg
+      else:
+        print "Invalid log parameter. Should be DEBUG, INFO, WARNING, ERROR, or CRITICAL"
+        usage()
+        sys.exit(3)
 
+
+
+def startLogger(dir):
+  if log == "DEBUG":
+    logging.basicConfig(filename=dir+"monitor.log",level=logging.DEBUG)
+  elif log == "INFO":
+    logging.basicConfig(filename=dir+"monitor.log",level=logging.INFO)
+  elif log == "WARNING":
+    logging.basicConfig(filename=dir+"monitor.log",level=logging.WARNING)
+  elif log == "ERROR":
+    logging.basicConfig(filename=dir+"monitor.log",level=logging.ERROR)
+  elif log == "CRITICAL":
+    logging.basicConfig(filename=dir+"monitor.log",level=logging.CRITICAL)
+  else:
+    print "Bad logging level. Exiting." #Should never get here
+    sys.exit(-1)
+
+  logging.info("Starting logging")
+
+
+
+
+
+def main():
+  parseArgs()
   createIfNotExists(directory)
+  startLogger(directory)
   setup()
 
 if __name__ == "__main__":
@@ -109,6 +141,7 @@ while True:
     if(movement > threshhold):
       if(hasBeenXSec(timer)):
         print("Motion Detected!!! #" + `counter`) # + " " + time.strftime("%Y-%m-%d %H:%M:%S %Z%z", time.gmtime()))
+        logging.info("Motion Detected!!! #" + `counter` + " " + time.strftime("%Y-%m-%d %H:%M:%S %Z%z", time.gmtime()))
         #cv2.imshow("Camera 2",cam2_frame)
         global_gmtime = time.gmtime()
         cv2.imwrite(directory + "frame"+`counter`+".jpg",color_frame)
