@@ -30,7 +30,7 @@ def hasBeenXSec(s):
 
 def usage():
     print ""
-    print "usage: " + sys.argv[0]
+    print "usage: python " + sys.argv[0]
     print ""
 
 
